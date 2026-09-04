@@ -101,9 +101,10 @@ create policy contacts_delete on public.contacts
 
 -- ---------------------------------------------------------------------------
 -- Grants for the Data API roles (RLS still filters every row)
+--   authenticated -> request carried a valid Neon Auth JWT
+--   anonymous     -> request had no JWT (granted nothing on contacts)
 -- ---------------------------------------------------------------------------
 grant usage on schema public to authenticated;
 grant select, insert, update, delete on public.contacts to authenticated;
 
--- `anon` (no JWT) is intentionally granted nothing on contacts.
-revoke all on public.contacts from anon;
+revoke all on public.contacts from anonymous;

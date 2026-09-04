@@ -9,11 +9,16 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import "dotenv/config";
+import dotenv from "dotenv";
 import pg from "pg";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const migrationsDir = path.join(__dirname, "..", "db", "migrations");
+const projectRoot = path.join(__dirname, "..");
+const migrationsDir = path.join(projectRoot, "db", "migrations");
+
+// Next.js keeps local secrets in .env.local; fall back to .env.
+dotenv.config({ path: path.join(projectRoot, ".env.local") });
+dotenv.config({ path: path.join(projectRoot, ".env") });
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
