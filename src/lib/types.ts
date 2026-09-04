@@ -4,6 +4,19 @@
 export const PRIORITIES = ["high", "medium", "low"] as const;
 export type Priority = (typeof PRIORITIES)[number];
 
+/** Sort weight so "high" sorts above "medium" above "low". */
+export const PRIORITY_RANK: Record<Priority, number> = {
+  high: 0,
+  medium: 1,
+  low: 2,
+};
+
+export const PRIORITY_LABEL: Record<Priority, string> = {
+  high: "High",
+  medium: "Medium",
+  low: "Low",
+};
+
 /** A contact row as stored in Neon Postgres. */
 export interface Contact {
   id: string;
