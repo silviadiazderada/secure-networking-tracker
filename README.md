@@ -16,7 +16,7 @@ another user's contacts — even though the browser talks to a public data API.
 ## Live app
 
 **Live URL:** _TODO — added after the Vercel deploy_
-**Repository:** https://github.com/silviaMITO/secure-networking-tracker
+**Repository:** https://github.com/silviadiazderada/secure-networking-tracker
 
 ---
 
@@ -105,7 +105,7 @@ Browser (Next.js React client)
 
 ```bash
 # 1. Clone
-git clone https://github.com/silviaMITO/secure-networking-tracker.git
+git clone https://github.com/silviadiazderada/secure-networking-tracker.git
 cd secure-networking-tracker
 
 # 2. Install
