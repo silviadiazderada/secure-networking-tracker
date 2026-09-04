@@ -110,6 +110,12 @@ function ContactForm({
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+    setErrors((e) => {
+      if (!(key in e)) return e;
+      const next = { ...e };
+      delete next[key];
+      return next;
+    });
   }
 
   async function handleSubmit(e: React.FormEvent) {

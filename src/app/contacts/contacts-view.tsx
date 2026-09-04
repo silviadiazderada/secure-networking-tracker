@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { useContacts } from "@/hooks/use-contacts";
-import { PRIORITIES, PRIORITY_LABEL, type Contact } from "@/lib/types";
+import {
+  PRIORITIES,
+  PRIORITY_LABEL,
+  type Contact,
+  type Priority,
+} from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -81,7 +86,13 @@ export function ContactsView() {
           }
         >
           <SelectTrigger className="sm:w-44" aria-label="Filter by priority">
-            <SelectValue />
+            <SelectValue>
+              {(v: string | null) =>
+                v && v !== "all"
+                  ? PRIORITY_LABEL[v as Priority]
+                  : "All priorities"
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All priorities</SelectItem>
