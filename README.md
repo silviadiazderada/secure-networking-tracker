@@ -1,7 +1,8 @@
 # Secure Networking Tracker
 
-> **Status:** 🚧 Build in progress. Sections marked _TODO_ are filled in as each
-> phase completes (see `docs/assignment.md` for the full rubric).
+> **Status:** 🚧 App complete and verified locally against Neon (auth, CRUD,
+> validation, RLS isolation). Remaining: push to GitHub, deploy to Vercel, add
+> the live URL + screenshots. Sections marked _TODO_ are filled in then.
 
 A private web app for keeping track of the people you want to stay connected
 with at Berkeley. Each user signs in, keeps their own contact list (name,
@@ -190,8 +191,8 @@ attempts to update or delete it affect zero rows.
 npm test
 ```
 
-`src/test/validation.test.ts` exercises `validateContact()` (the shared rule set
-mirrored by the database `CHECK` constraints) and asserts:
+**`src/test/validation.test.ts`** — unit tests for `validateContact()`, the
+shared rule set mirrored by the database `CHECK` constraints:
 
 - a well-formed contact is accepted and normalized
 - an **empty name** is rejected
@@ -201,7 +202,33 @@ mirrored by the database `CHECK` constraints) and asserts:
 - blank optional fields become `null`
 - an over-long name is rejected
 
-_Test output is pasted in [Evidence](#evidence) after Phase 5._
+**`src/test/rls.test.ts`** — the automated two-account privacy test. It runs
+against the live Neon Data API: signs in as two accounts, exchanges each
+session for a JWT, then proves Row Level Security holds:
+
+- User A can read its own contact
+- **User B cannot read User A's contact** (select policy)
+- **User B cannot update User A's contact** — and A's data is unchanged
+- **User B cannot delete User A's contact**
+- **User B cannot insert a row it labels as owned by User A** — `403` from the
+  `WITH CHECK` clause
+
+It needs `RLS_TEST_USER_*` env vars (see `.env.example`) and skips cleanly if
+they are absent, so `npm test` always passes at least the validation suite.
+
+```
+✓ validation.test.ts  (7 tests)
+✓ rls.test.ts > RLS: one user cannot touch another user's contacts
+  ✓ A can read its own new contact
+  ✓ B cannot read A's contact (RLS select policy)
+  ✓ B cannot update A's contact (RLS update policy)
+  ✓ B cannot delete A's contact (RLS delete policy)
+  ✓ B cannot create a row owned by A (RLS insert WITH CHECK)
+  ✓ cleanup: A deletes the test contact
+
+Test Files  2 passed (2)
+     Tests  13 passed (13)
+```
 
 ---
 
@@ -222,15 +249,13 @@ _TODO — final steps confirmed during Phase 8._
 
 ## Evidence
 
-_TODO — assembled in Phase 9:_
-
-- [ ] Automated test output (at least one passing validation test)
+- [x] Automated test output — `npm test`, 13 passing (see [Tests](#tests))
 - [ ] Screenshot / recording of sign in and sign out
 - [ ] Screenshot / recording of create, edit, delete, refresh
-- [ ] Two-account test: one user cannot access the other's contacts
+- [x] Two-account test — automated in `src/test/rls.test.ts`; screenshot _TODO_
 - [ ] Screenshot of one invalid input failing safely
-- [ ] Schema + RLS ownership explanation (above)
-- [ ] Public GitHub repo with no committed secrets
+- [x] Schema + RLS ownership explanation (above)
+- [ ] Public GitHub repo with no committed secrets (pending push)
 
 ---
 
