@@ -17,6 +17,7 @@ export function AppHeader() {
     setSigningOut(true);
     try {
       await neon.auth.signOut();
+      toast.dismiss();
       router.replace("/sign-in");
     } catch {
       toast.error("Could not sign out. Please try again.");

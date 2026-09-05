@@ -1,8 +1,8 @@
 # Secure Networking Tracker
 
-> **Status:** 🚧 App complete and verified locally against Neon (auth, CRUD,
-> validation, RLS isolation). Remaining: push to GitHub, deploy to Vercel, add
-> the live URL + screenshots. Sections marked _TODO_ are filled in then.
+> **Status:** ✅ Live on Vercel and verified end to end — sign up / in / out,
+> create / edit / delete / sort / filter, refresh persistence, validation, and
+> the two-account privacy check all pass against the production deployment.
 
 A private web app for keeping track of the people you want to stay connected
 with at Berkeley. Each user signs in, keeps their own contact list (name,
@@ -15,21 +15,34 @@ another user's contacts — even though the browser talks to a public data API.
 
 ## Live app
 
-**Live URL:** _TODO — added after the Vercel deploy_
+**Live URL:** https://secure-networking-tracker-seven.vercel.app
 **Repository:** https://github.com/silviadiazderada/secure-networking-tracker
 
 ---
 
 ## Product walkthrough / screenshots
 
-_TODO — added after Phase 9. Will include:_
+Screenshots are in [`docs/screenshots/`](docs/screenshots/).
 
-- Sign in and sign out
-- Creating, editing, deleting, and refreshing a contact
-- A two-account test showing User A cannot see User B's contacts
-- One invalid input failing safely
+**Sign in** — unauthenticated visitors are sent here; the contacts page is gated.
 
-Screenshots live in [`docs/screenshots/`](docs/screenshots/).
+![Sign in](docs/screenshots/01-sign-in.jpg)
+
+**A signed-in user's private contact list** — sortable columns, priority filter,
+search, and per-row edit / delete.
+
+![User A's contacts](docs/screenshots/03-user-a-contacts.jpg)
+
+**Two-account privacy check** — User A (above) has two contacts. A second
+account, `userb@example.com`, signed into the same production app, sees none of
+them: Row Level Security filters every Data API response to the signed-in user.
+
+![User B sees an empty list](docs/screenshots/04-user-b-empty-list.jpg)
+
+**Invalid input fails safely** — an empty name is rejected client-side before
+any request, and the database `CHECK` constraint would reject it regardless.
+
+![Validation error](docs/screenshots/05-validation-error.jpg)
 
 ---
 
@@ -235,37 +248,64 @@ Test Files  2 passed (2)
 
 ## Deployment
 
-_TODO — final steps confirmed during Phase 8._
+The app is deployed on Vercel, linked to this GitHub repo — every push to
+`main` triggers a new production build.
 
-1. Push to GitHub (public repo).
-2. Import the repo into Vercel (or `vercel --prod`).
-3. Set production environment variables in Vercel:
-   `NEXT_PUBLIC_NEON_AUTH_URL`, `NEXT_PUBLIC_NEON_DATA_API_URL`.
-4. Add the deployed `*.vercel.app` domain to Neon Auth's trusted origins.
-5. Open the public URL in a private window; create two accounts; repeat the
-   privacy test in production.
-6. Run the Definition of Done checklist against the live URL.
+**How it was deployed:**
+
+1. Pushed the repo to GitHub (public).
+2. Imported it at [vercel.com/new](https://vercel.com/new); Vercel auto-detected
+   Next.js — no build settings changed.
+3. Added two production environment variables in Vercel (both public, both
+   `NEXT_PUBLIC_`):
+   - `NEXT_PUBLIC_NEON_AUTH_URL`
+   - `NEXT_PUBLIC_NEON_DATA_API_URL`
+
+   `DATABASE_URL` is **not** set in Vercel — it is only used locally by
+   `npm run db:migrate`.
+4. Added the deployment domain (`https://secure-networking-tracker-seven.vercel.app`)
+   to **Neon Auth → Configuration → Domains** (trusted origins). Without this,
+   Better Auth rejects sign-in from the deployed origin with `INVALID_ORIGIN`.
+5. Opened the live URL in a fresh browser, created two accounts, and repeated
+   the privacy test against production.
+
+**Redeploy:** push to `main`, or run `npx vercel --prod` from the project root.
 
 ---
 
 ## Evidence
 
-- [x] Automated test output — `npm test`, 13 passing (see [Tests](#tests))
-- [ ] Screenshot / recording of sign in and sign out
-- [ ] Screenshot / recording of create, edit, delete, refresh
-- [x] Two-account test — automated in `src/test/rls.test.ts`; screenshot _TODO_
-- [ ] Screenshot of one invalid input failing safely
-- [x] Schema + RLS ownership explanation (above)
-- [ ] Public GitHub repo with no committed secrets (pending push)
+- [x] **Automated test output** — `npm test`, 13 passing (see [Tests](#tests))
+- [x] **Sign in / sign out** — [`docs/screenshots/01-sign-in.jpg`](docs/screenshots/01-sign-in.jpg);
+      the header's "Sign out" button clears the session and returns to sign-in
+- [x] **Create / edit / delete / refresh** — verified against production; a
+      created contact survives a full page reload (stored in Neon Postgres)
+- [x] **Two-account test** — automated in `src/test/rls.test.ts`, plus
+      screenshots: [User A's list](docs/screenshots/03-user-a-contacts.jpg) vs
+      [User B's empty list](docs/screenshots/04-user-b-empty-list.jpg) on the
+      same production app
+- [x] **Invalid input fails safely** — [`docs/screenshots/05-validation-error.jpg`](docs/screenshots/05-validation-error.jpg)
+- [x] **Schema + RLS ownership explanation** — see
+      [Authentication and Row Level Security ownership](#authentication-and-row-level-security-ownership)
+- [x] **Public GitHub repo, no committed secrets** —
+      https://github.com/silviadiazderada/secure-networking-tracker
+      (`.env.local` is gitignored; only `.env.example` with placeholders is
+      committed)
 
 ---
 
 ## Known limitations and next improvements
 
-_TODO — finalized in Phase 9. Current expected list:_
-
-- Email + password only; no OAuth or password reset flow.
-- No pagination — the list loads all of a user's contacts at once.
-- No automated end-to-end test; the two-user privacy check is done manually
-  (an optional integration test is noted in the plan).
-- No soft delete / undo.
+- **Auth is email + password only** — no OAuth, no email verification, no
+  password reset. Neon Managed Better Auth supports these; they were out of
+  scope for a small secure app.
+- **No pagination** — the contact list loads all of a user's rows at once.
+  Fine for a personal networking list; would need cursor pagination at scale.
+- **Sort and filter run client-side** for the priority-rank ordering; the
+  priority filter and text search are pushed to the Data API. All of it still
+  operates only on the signed-in user's rows (RLS).
+- **No optimistic UI / undo** — mutations refetch the list, so there is a brief
+  spinner and no "undo delete".
+- **RLS test uses shared example accounts** — `src/test/rls.test.ts` needs two
+  pre-created accounts supplied via env vars; it does not create or tear them
+  down.
