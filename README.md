@@ -25,17 +25,36 @@ another user's contacts — even though the browser talks to a public data API.
 Screenshots are in [`docs/screenshots/`](docs/screenshots/).
 
 **Sign in** — unauthenticated visitors are sent here; the contacts page is gated.
+Signing out from the header clears the session and returns to this screen.
 
 ![Sign in](docs/screenshots/01-sign-in.jpg)
+
+**Create a contact** — name, company, role, where you met, notes, and a
+priority of high / medium / low.
+
+![Add contact dialog](docs/screenshots/02-create-contact.png)
 
 **A signed-in user's private contact list** — sortable columns, priority filter,
 search, and per-row edit / delete.
 
 ![User A's contacts](docs/screenshots/03-user-a-contacts.jpg)
 
-**Two-account privacy check** — User A (above) has two contacts. A second
-account, `userb@example.com`, signed into the same production app, sees none of
-them: Row Level Security filters every Data API response to the signed-in user.
+**Edit a contact** — the dialog opens pre-filled…
+
+![Edit contact dialog](docs/screenshots/06-edit-contact.png)
+
+…and the change persists (company / role updated in the list, and it survives a
+page refresh because it is stored in Neon Postgres).
+
+![List after edit](docs/screenshots/07-edit-persisted.png)
+
+**Delete a contact** — a confirmation step guards the irreversible action.
+
+![Delete confirmation](docs/screenshots/08-delete-contact.png)
+
+**Two-account privacy check** — User A (above) has contacts. A second account,
+`userb@example.com`, signed into the same production app, sees none of them:
+Row Level Security filters every Data API response to the signed-in user.
 
 ![User B sees an empty list](docs/screenshots/04-user-b-empty-list.jpg)
 
@@ -278,8 +297,13 @@ The app is deployed on Vercel, linked to this GitHub repo — every push to
 - [x] **Automated test output** — `npm test`, 13 passing (see [Tests](#tests))
 - [x] **Sign in / sign out** — [`docs/screenshots/01-sign-in.jpg`](docs/screenshots/01-sign-in.jpg);
       the header's "Sign out" button clears the session and returns to sign-in
-- [x] **Create / edit / delete / refresh** — verified against production; a
-      created contact survives a full page reload (stored in Neon Postgres)
+- [x] **Create / edit / delete / refresh** — screenshots of the
+      [create](docs/screenshots/02-create-contact.png),
+      [edit](docs/screenshots/06-edit-contact.png) →
+      [persisted](docs/screenshots/07-edit-persisted.png), and
+      [delete](docs/screenshots/08-delete-contact.png) flows on the production
+      app; an edited contact survives a full page reload (stored in Neon
+      Postgres)
 - [x] **Two-account test** — automated in `src/test/rls.test.ts`, plus
       screenshots: [User A's list](docs/screenshots/03-user-a-contacts.jpg) vs
       [User B's empty list](docs/screenshots/04-user-b-empty-list.jpg) on the
