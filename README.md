@@ -210,7 +210,9 @@ Table: `public.contacts` (defined in
     cannot edit someone else's row **and** cannot reassign their own row to
     another user
   - `contacts_delete` — `USING (user_id = auth.user_id())`
-- The `anon` role (no JWT) is granted nothing on `contacts`.
+- The `anonymous` role (requests with no JWT) is granted nothing on `contacts`,
+  and a request with no bearer token is rejected by the Data API before RLS is
+  even reached.
 
 **Result:** every query the Data API runs is silently filtered to the signed-in
 user's rows. User A asking for User B's contact id gets an empty result;
